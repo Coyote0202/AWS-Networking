@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "ap-northeast-1"
+  region  = "ap-northeast-1"
   profile = "goodjob-cloud"
 }
 
@@ -12,7 +12,7 @@ resource "aws_vpc" "main" {
 }
 
 resource "aws_subnet" "public_subnet" {
-  vpc_id = "${aws_vpc.main.id}"
+  vpc_id     = aws_vpc.main.id
   cidr_block = "10.0.1.0/24"
   tags = {
     Name = "パブリックサブネット"
@@ -20,5 +20,5 @@ resource "aws_subnet" "public_subnet" {
 }
 
 resource "aws_internet_gateway" "main" {
-  vpc_id = "${aws_vpc.main.id}"
+  vpc_id = aws_vpc.main.id
 }
