@@ -40,3 +40,42 @@ resource "aws_route_table_association" "public" {
   subnet_id      = aws_subnet.public_subnet.id
   route_table_id = aws_route_table.public.id
 }
+
+
+resource "aws_security_group" "web_sg" {
+  name   = "WEB-SG"
+  vpc_id = aws_vpc.main.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+data "aws_ami" "amazon-linux-2" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "owner-alias"
+    values = ["amazon"]
+  }
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm*"]
+  }
+}
+
+resource "aws_instance" "web" {
+  ami           = data.aws_ami.amazon-linux-2.id
+  instance_type = "t2.micro"
+  subnet_id     = aws_subnet.public_subnet.id
+  private_ip    = "10.0.1.10"
+
+  tags = {
+    Name = "Web サーバー"
+  }
+}
