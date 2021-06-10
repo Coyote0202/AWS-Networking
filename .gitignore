@@ -36,3 +36,5 @@ terraform.rc
 
 # editor
 .vscode
+
+terraform.tfvars
