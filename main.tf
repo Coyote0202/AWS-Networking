@@ -70,12 +70,22 @@ data "aws_ami" "amazon-linux-2" {
 }
 
 resource "aws_instance" "web" {
-  ami           = data.aws_ami.amazon-linux-2.id
-  instance_type = "t2.micro"
-  subnet_id     = aws_subnet.public_subnet.id
-  private_ip    = "10.0.1.10"
+  ami                         = data.aws_ami.amazon-linux-2.id
+  instance_type               = "t2.micro"
+  associate_public_ip_address = true
+  subnet_id                   = aws_subnet.public_subnet.id
+  private_ip                  = "10.0.1.10"
+  security_groups = [
+    aws_security_group.web_sg.id
+  ]
+  key_name = aws_key_pair.auth.id
 
   tags = {
     Name = "Web サーバー"
   }
+}
+
+resource "aws_key_pair" "auth" {
+  key_name   = var.key_pair_name
+  public_key = file(var.public_key_path)
 }
