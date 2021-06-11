@@ -52,6 +52,13 @@ resource "aws_security_group" "web_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
 data "aws_ami" "amazon-linux-2" {
@@ -79,6 +86,20 @@ resource "aws_instance" "web" {
     aws_security_group.web_sg.id
   ]
   key_name = aws_key_pair.auth.id
+
+  provisioner "remote-exec" {
+    connection {
+      host        = self.public_ip
+      type        = "ssh"
+      user        = "ec2-user"
+      private_key = file(var.private_key_path)
+    }
+    inline = [
+      "sudo yum -y install httpd",
+      "sudo systemctl start httpd.service",
+      "sudo systemctl enable httpd.service"
+    ]
+  }
 
   tags = {
     Name = "Web サーバー"
