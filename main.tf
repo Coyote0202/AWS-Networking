@@ -92,6 +92,32 @@ resource "aws_security_group" "web_sg" {
   }
 }
 
+resource "aws_security_group" "db_sg" {
+  name   = "DB-SG"
+  vpc_id = aws_vpc.main.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 data "aws_ami" "amazon-linux-2" {
   most_recent = true
   owners      = ["amazon"]
@@ -134,6 +160,22 @@ resource "aws_instance" "web" {
 
   tags = {
     Name = "Web サーバー"
+  }
+}
+
+resource "aws_instance" "db" {
+  ami                         = data.aws_ami.amazon-linux-2.id
+  instance_type               = "t2.micro"
+  associate_public_ip_address = true
+  subnet_id                   = aws_subnet.private_subnet.id
+  private_ip                  = "10.0.2.10"
+  security_groups = [
+    aws_security_group.db_sg.id
+  ]
+  key_name = aws_key_pair.auth.id
+
+  tags = {
+    Name = "DB サーバー"
   }
 }
 
