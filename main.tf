@@ -56,6 +56,12 @@ resource "aws_route" "public" {
   gateway_id             = aws_internet_gateway.main.id
 }
 
+resource "aws_route" "private" {
+  destination_cidr_block = "0.0.0.0/0"
+  route_table_id         = aws_route_table.private.id
+  nat_gateway_id         = aws_nat_gateway.gateway.id
+}
+
 resource "aws_route_table_association" "public" {
   subnet_id      = aws_subnet.public_subnet.id
   route_table_id = aws_route_table.public.id
@@ -130,6 +136,18 @@ resource "aws_security_group" "db_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+resource "aws_eip" "nat" {
+  vpc = true
+}
+
+resource "aws_nat_gateway" "gateway" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = aws_subnet.public_subnet.id
+  depends_on = [
+    aws_internet_gateway.main
+  ]
 }
 
 data "aws_ami" "amazon-linux-2" {
